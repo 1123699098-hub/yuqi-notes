@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YUQI · 让万物穿过</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#0a0a0a;color:#e8e8e8;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  .container{max-width:960px;margin:0 auto;padding:0 24px}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(10,10,10,0.7);border-bottom:1px solid rgba(255,255,255,0.06)}
+  .nav-inner{max-width:960px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.5px;cursor:pointer;transition:opacity .2s}
+  .logo:hover{opacity:.7}
+  nav{display:flex;gap:8px}
+  nav button{background:transparent;border:none;color:#888;font-size:14px;font-weight:500;cursor:pointer;padding:6px 14px;border-radius:8px;transition:all .2s}
+  nav button:hover{color:#ccc;background:rgba(255,255,255,0.05)}
+  nav button.active{color:#fff;background:rgba(255,255,255,0.1)}
+
+  .page{display:none}
+  .page.active{display:block}
+
+  .hero{min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:80px}
+  .hero h1{font-size:42px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:12px}
+  .input-wrap{width:100%;max-width:640px;position:relative;margin-top:24px}
+  .input-box{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px 20px 56px;color:#e8e8e8;font-size:16px;line-height:1.6;resize:none;outline:none;transition:border-color .2s,background .2s;min-height:120px}
+  .input-box::placeholder{color:#555}
+  .input-box:focus{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06)}
+  .selector-wrap{position:absolute;bottom:16px;left:16px;display:flex;align-items:center;gap:8px}
+  .selector-label{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.5px}
+  .selector{appearance:none;-webkit-appearance:none;background:#0a0a0a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:6px 28px 6px 12px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;outline:none;transition:border-color .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+  .selector:hover,.selector:focus{border-color:rgba(255,255,255,0.3)}
+  .selector option{background:#0a0a0a;color:#fff}
+  .submit-btn{position:absolute;bottom:16px;right:16px;background:#fff;color:#0a0a0a;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s}
+  .submit-btn:hover{opacity:.85}
+  .submit-btn:active{transform:scale(0.96)}
+  .shortcut-hint{margin-top:16px;font-size:13px;color:#444}
+  .shortcut-hint kbd{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;font-size:12px;font-family:inherit}
+
+  .extra-fields{max-width:640px;width:100%;margin-top:16px;display:none;flex-direction:column;gap:10px;animation:fadeInUp .25s ease}
+  .extra-fields.visible{display:flex}
+  .extra-row{display:flex;gap:10px}
+  .extra-field{flex:1;display:flex;flex-direction:column;gap:4px;text-align:left}
+  .extra-field label{font-size:12px;color:#666;font-weight:500}
+  .extra-field .extra-input,.extra-field .extra-select{background:#0a0a0a;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 12px;color:#fff;font-size:14px;outline:none;transition:border-color .2s}
+  .extra-field .extra-input:focus,.extra-field .extra-select:focus{border-color:rgba(255,255,255,0.3)}
+  .extra-field .extra-input::placeholder{color:#555}
+  .extra-field .extra-select{appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+  .extra-field .extra-select option{background:#0a0a0a;color:#fff}
+
+  .home-sections{padding:40px 0 80px}
+  .range-title{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
+  .range-subtitle{font-size:14px;color:#666;margin-bottom:32px}
+  .home-sections section{padding:32px 0;border-top:1px solid rgba(255,255,255,0.06)}
+  .home-sections section:first-child{border-top:none}
+  .section-header{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 12px;margin:-8px -12px;border-radius:10px;transition:background .2s;width:fit-content}
+  .section-header:hover{background:rgba(255,255,255,0.04)}
+  .section-header h2{font-size:22px;font-weight:700;color:#fff}
+  .section-header .arrow{font-size:14px;color:#555;transition:transform .2s,color .2s}
+  .section-header:hover .arrow{color:#888;transform:translateX(4px)}
+  .section-desc{font-size:13px;color:#555;margin:6px 0 20px 32px}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:700}
+  .badge-clip{background:rgba(59,130,246,0.15);color:#60a5fa}
+  .badge-note{background:rgba(34,197,94,0.15);color:#4ade80}
+  .badge-summ{background:rgba(168,85,247,0.15);color:#c084fc}
+
+  .preview-cards{display:flex;flex-direction:column;gap:10px}
+  .preview-cards .card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px;transition:background .2s,border-color .2s;animation:fadeInUp .3s ease}
+  .preview-cards .card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
+  .preview-cards .card-text{font-size:14px;color:#ccc;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  .card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .tag{font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.05);color:#888}
+  .tag.source{background:rgba(59,130,246,0.1);color:#60a5fa}
+  .tag.type{background:rgba(168,85,247,0.1);color:#c084fc}
+  .tag.activity{background:rgba(34,197,94,0.1);color:#4ade80}
+  .preview-cards .card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .preview-cards .card-time{font-size:12px;color:#444}
+  .preview-cards .card-actions{display:flex;gap:8px}
+  .card-btn{background:transparent;border:none;color:#555;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px;transition:color .2s,background .2s}
+  .card-btn:hover{color:#fff;background:rgba(255,255,255,0.06)}
+  .card-btn.delete:hover{color:#ef4444;background:rgba(239,68,68,0.08)}
+  .empty-state{text-align:center;padding:32px 0;color:#444;font-size:14px}
+
+  .detail-page{padding-top:64px;min-height:100vh}
+  .detail-header{display:flex;align-items:center;gap:16px;padding:32px 0 12px}
+  .back-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;color:#aaa;font-size:14px;cursor:pointer;transition:all .2s}
+  .back-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
+  .detail-title{font-size:24px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px}
+  .detail-count{font-size:14px;color:#555;margin-left:8px;font-weight:400}
+
+  .filter-bar{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0 20px;align-items:center}
+  .filter-label{font-size:12px;color:#666;margin-right:4px}
+  .filter-select{appearance:none;-webkit-appearance:none;background:#0a0a0a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:6px 28px 6px 10px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;outline:none;transition:border-color .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center}
+  .filter-select:hover,.filter-select:focus{border-color:rgba(255,255,255,0.3)}
+  .filter-select option{background:#0a0a0a;color:#fff}
+  .filter-clear{background:transparent;border:none;color:#555;font-size:12px;cursor:pointer;padding:6px 10px;border-radius:6px;transition:color .2s,background .2s}
+  .filter-clear:hover{color:#fff;background:rgba(255,255,255,0.06)}
+  .ai-analyze-btn{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.25);border-radius:8px;padding:6px 14px;color:#c084fc;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+  .ai-analyze-btn:hover{background:rgba(168,85,247,0.2);color:#d8b4fe}
+
+  .matrix-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:60px}
+  @media(max-width:768px){.matrix-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.matrix-grid{grid-template-columns:1fr}.filter-bar{gap:6px}}
+  .matrix-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;transition:background .2s,border-color .2s,transform .15s;display:flex;flex-direction:column;min-height:180px;animation:fadeInUp .35s ease;animation-fill-mode:both}
+  .matrix-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12);transform:translateY(-2px)}
+  .matrix-card-text{font-size:14px;color:#ccc;line-height:1.6;white-space:pre-wrap;word-break:break-word;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
+  .matrix-card-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  .matrix-card-tags .tag{font-size:10px;padding:2px 6px}
+  .matrix-card-author{font-size:12px;color:#666;margin-bottom:2px}
+  .matrix-card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,0.04)}
+  .matrix-card-time{font-size:11px;color:#444}
+  .matrix-card-actions{display:flex;gap:4px}
+  .matrix-card-actions .card-btn{padding:3px 6px;font-size:11px}
+
+  /* AI Chat Modal */
+  .ai-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px}
+  .ai-modal.active{display:flex}
+  .ai-modal-content{width:100%;max-width:720px;height:85vh;max-height:700px;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;animation:fadeInUp .25s ease}
+  .ai-modal-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .ai-modal-header h3{font-size:16px;font-weight:700;color:#fff}
+  .ai-modal-header .ai-context{font-size:12px;color:#888}
+  .ai-close{margin-left:auto;background:transparent;border:none;color:#666;font-size:18px;cursor:pointer;padding:4px;border-radius:6px;transition:color .2s}
+  .ai-close:hover{color:#fff}
+  .ai-chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+  .ai-msg{display:flex;gap:10px;max-width:90%}
+  .ai-msg.ai{align-self:flex-start}
+  .ai-msg.user{align-self:flex-end;flex-direction:row-reverse}
+  .ai-avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .ai-msg.ai .ai-avatar{background:rgba(168,85,247,0.15);color:#c084fc}
+  .ai-msg.user .ai-avatar{background:rgba(255,255,255,0.1);color:#ccc}
+  .ai-bubble{padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  .ai-msg.ai .ai-bubble{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);color:#ddd;border-top-left-radius:4px}
+  .ai-msg.user .ai-bubble{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.2);color:#e8e8e8;border-top-right-radius:4px}
+  .ai-loading{color:#888;font-size:13px;display:flex;align-items:center;gap:8px}
+  .ai-loading::before{content:'';width:14px;height:14px;border:2px solid rgba(255,255,255,0.1);border-top-color:#c084fc;border-radius:50%;animation:spin .8s linear infinite}
+  .ai-input-wrap{display:flex;gap:10px;padding:12px 20px 16px;border-top:1px solid rgba(255,255,255,0.06)}
+  .ai-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;resize:none;outline:none;transition:border-color .2s;min-height:44px;max-height:120px;font-family:inherit}
+  .ai-input:focus{border-color:rgba(168,85,247,0.4)}
+  .ai-input::placeholder{color:#555}
+  .ai-send{background:#fff;color:#0a0a0a;border:none;border-radius:10px;padding:0 18px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;height:44px}
+  .ai-send:hover{opacity:.85}
+  .ai-send:disabled{opacity:.4;cursor:not-allowed}
+  .ai-settings{background:transparent;border:none;color:#666;font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .2s,background .2s;margin-left:auto}
+  .ai-settings:hover{color:#c084fc;background:rgba(168,85,247,0.08)}
+  .ai-settings-panel{display:none;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.3)}
+  .ai-settings-panel.active{display:block}
+  .ai-settings-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+  .ai-settings-row label{font-size:12px;color:#888;font-weight:500}
+  .ai-settings-input,.ai-settings-select{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;color:#ccc;font-size:13px;outline:none;transition:border-color .2s;font-family:inherit}
+  .ai-settings-input:focus,.ai-settings-select:focus{border-color:rgba(168,85,247,0.4)}
+  .ai-settings-input::placeholder{color:#444}
+  .ai-settings-select{appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+  .ai-settings-select option{background:#111;color:#ccc}
+  .ai-settings-actions{display:flex;gap:8px;margin-top:12px}
+  .ai-settings-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:opacity .2s}
+  .ai-settings-btn-primary{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.25)}
+  .ai-settings-btn-primary:hover{background:rgba(168,85,247,0.25)}
+  .ai-settings-btn{background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)}
+  .ai-settings-btn:hover{color:#fff}
+  .ai-settings-hint{font-size:11px;color:#444;margin-top:8px;line-height:1.5}
+  .ai-settings-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.1);color:#c084fc;font-size:11px;padding:2px 8px;border-radius:4px;margin-left:8px;font-weight:600}
+  .ai-fallback-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;color:#aaa;font-size:12px;cursor:pointer;transition:all .2s}
+  .ai-fallback-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
+  .ai-fallback-btn svg{width:14px;height:14px}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:640px){.hero h1{font-size:32px}.hero p{font-size:15px}nav button{font-size:13px;padding:5px 10px}.extra-row{flex-direction:column}.ai-modal-content{height:92vh;border-radius:14px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <div class="logo" id="logoBtn">YUQI</div>
+    <nav>
+      <button data-range="day" class="active">DAY</button>
+      <button data-range="week">WEEK</button>
+      <button data-range="month">MONTH</button>
+      <button data-range="year">YEAR</button>
+    </nav>
+  </div>
+</header>
+
+<div id="pageHome" class="page active">
+  <main class="container">
+    <section class="hero" style="border:none;padding-bottom:0">
+      <h1>让万物穿过</h1>
+      <div class="input-wrap">
+        <textarea id="mainInput" class="input-box" placeholder="在这里输入你的想法、摘录或长记...&#10;⌘ 回车快速提交"></textarea>
+        <div class="selector-wrap">
+          <span class="selector-label">Inbox</span>
+          <select id="category" class="selector">
+            <option value="clip">摘抄</option>
+            <option value="note">记录</option>
+            <option value="summ">长记</option>
+          </select>
+        </div>
+        <button id="submitBtn" class="submit-btn">保存</button>
+      </div>
+      <div id="clipExtra" class="extra-fields">
+        <div class="extra-row">
+          <div class="extra-field">
+            <label>来源</label>
+            <select id="clipSource" class="extra-select">
+              <option value="">选择来源</option><option value="书籍">书籍</option><option value="视频">视频</option><option value="播客">播客</option>
+            </select>
+          </div>
+          <div class="extra-field">
+            <label>类别</label>
+            <select id="clipType" class="extra-select">
+              <option value="">选择类别</option><option value="AI">AI</option><option value="金融">金融</option><option value="历史">历史</option><option value="文学">文学</option><option value="哲学">哲学</option><option value="心理">心理</option>
+            </select>
+          </div>
+        </div>
+        <div class="extra-row">
+          <div class="extra-field"><label>Author</label><input id="clipAuthor" class="extra-input" type="text" placeholder="作者姓名"/></div>
+          <div class="extra-field"><label>Title</label><input id="clipTitle" class="extra-input" type="text" placeholder="书名 / 文章名 / 视频名"/></div>
+        </div>
+      </div>
+      <div id="noteExtra" class="extra-fields">
+        <div class="extra-row">
+          <div class="extra-field" style="max-width:200px">
+            <label>活动</label>
+            <select id="noteActivity" class="extra-select">
+              <option value="">选择活动</option><option value="网球">网球</option><option value="读书">读书</option><option value="金融">金融</option><option value="健身">健身</option><option value="音乐">音乐</option><option value="跑步">跑步</option><option value="骑行">骑行</option><option value="游泳">游泳</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <p class="shortcut-hint">按 <kbd>⌘ Enter</kbd> 或 <kbd>Ctrl Enter</kbd> 快速提交</p>
+    </section>
+
+    <div class="home-sections">
+      <div class="range-title" id="homeRangeTitle">Today</div>
+      <div class="range-subtitle" id="homeRangeSubtitle">展示今日的全部内容</div>
+      <section id="homeClip">
+        <div class="section-header" data-cat="clip"><span class="badge badge-clip">摘</span><h2>摘抄</h2><span class="arrow">→</span></div>
+        <p class="section-desc">从阅读中收集的金句、段落与灵感</p>
+        <div id="homeClipList" class="preview-cards"></div>
+      </section>
+      <section id="homeNote">
+        <div class="section-header" data-cat="note"><span class="badge badge-note">记</span><h2>记录</h2><span class="arrow">→</span></div>
+        <p class="section-desc">日常的思考、想法与备忘</p>
+        <div id="homeNoteList" class="preview-cards"></div>
+      </section>
+      <section id="homeSumm">
+        <div class="section-header" data-cat="summ"><span class="badge badge-summ">长</span><h2>长记</h2><span class="arrow">→</span></div>
+        <p class="section-desc">更长的思考、创作、感受</p>
+        <div id="homeSummList" class="preview-cards"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="pageDetail" class="page">
+  <main class="container detail-page">
+    <div class="detail-header">
+      <button class="back-btn" id="backBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>返回
+      </button>
+      <div class="detail-title" id="detailTitle">
+        <span class="badge" id="detailBadge">摘</span><span id="detailTitleText">摘抄</span><span class="detail-count" id="detailCount">(0)</span>
+      </div>
+    </div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div id="detailGrid" class="matrix-grid"></div>
+  </main>
+</div>
+
+<!-- AI Chat Modal -->
+<div id="aiModal" class="ai-modal">
+  <div class="ai-modal-content">
+    <div class="ai-modal-header">
+      <h3>AI 分析</h3>
+      <span class="ai-context" id="aiContextInfo">基于 0 条记录</span>
+      <button class="ai-settings" id="aiSettingsBtn" title="设置 API Key">⚙️</button>
+      <button class="ai-close" id="aiCloseBtn">✕</button>
+    </div>
+
+    <!-- API Key Settings Panel -->
+    <div id="aiSettingsPanel" class="ai-settings-panel">
+      <div class="ai-settings-row">
+        <label>API Key</label>
+        <input id="apiKeyInput" class="ai-settings-input" type="password" placeholder="输入你的 Kimi API Key，例如 sk-..." />
+      </div>
+      <div class="ai-settings-row">
+        <label>API 地址</label>
+        <input id="apiUrlInput" class="ai-settings-input" type="text" value="https://api.moonshot.cn/v1/chat/completions" />
+      </div>
+      <div class="ai-settings-row">
+        <label>模型</label>
+        <select id="apiModelInput" class="ai-settings-select">
+          <option value="moonshot-v1-8k">moonshot-v1-8k</option>
+          <option value="moonshot-v1-32k">moonshot-v1-32k</option>
+          <option value="moonshot-v1-128k">moonshot-v1-128k</option>
+        </select>
+      </div>
+      <div class="ai-settings-actions">
+        <button id="apiKeySaveBtn" class="ai-settings-btn ai-settings-btn-primary">保存配置</button>
+        <button id="apiKeyClearBtn" class="ai-settings-btn">清除</button>
+      </div>
+      <p class="ai-settings-hint">配置后，AI 分析将直接通过你的 API Key 调用。数据仅存储在本地浏览器中。</p>
+    </div>
+
+    <div id="aiChat" class="ai-chat"></div>
+    <div class="ai-input-wrap">
+      <textarea id="aiInput" class="ai-input" rows="1" placeholder="输入你的问题，例如：这些内容有什么共同主题？"></textarea>
+      <button id="aiSendBtn" class="ai-send">发送</button>
+    </div>
+    <div class="ai-fallback" id="aiFallback">
+      <button class="ai-fallback-btn" id="aiCopyFallbackBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        复制 Prompt
+      </button>
+      <a href="https://kimi.moonshot.cn" target="_blank" class="ai-fallback-btn" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        打开 Kimi
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast">已保存</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'quicknote_data';
+  const CATEGORY_LABEL = { clip: '摘抄', note: '记录', summ: '长记' };
+  const CATEGORY_BADGE = { clip: '摘', note: '记', summ: '长' };
+  const BADGE_CLASS = { clip: 'badge-clip', note: 'badge-note', summ: 'badge-summ' };
+  const RANGE_CONFIG = {
+    day: { title: 'Today', subtitle: '展示今日的全部内容', days: 1 },
+    week: { title: 'This Week', subtitle: '展示近7天的全部内容', days: 7 },
+    month: { title: 'This Month', subtitle: '展示近30天的全部内容', days: 30 },
+    year: { title: 'This Year', subtitle: '展示近365天的全部内容', days: 365 }
+  };
+  const API_CONFIG_KEY = 'yuqi_api_config';
+  const DEFAULT_API_URL = 'https://api.moonshot.cn/v1/chat/completions';
+  const DEFAULT_API_MODEL = 'moonshot-v1-8k';
+
+  let currentRange = 'day', currentDetailCat = null, detailFilters = {}, currentFilteredItems = [];
+  let aiMessages = [], aiFallbackMode = false;
+
+  function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; } }
+  function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  function loadApiConfig() { try { return JSON.parse(localStorage.getItem(API_CONFIG_KEY)) || null; } catch { return null; } }
+  function saveApiConfig(cfg) { localStorage.setItem(API_CONFIG_KEY, JSON.stringify(cfg)); }
+  function clearApiConfig() { localStorage.removeItem(API_CONFIG_KEY); }
+  function getApiConfig() {
+    const cfg = loadApiConfig();
+    if (!cfg) return null;
+    return { key: cfg.key || '', url: cfg.url || DEFAULT_API_URL, model: cfg.model || DEFAULT_API_MODEL };
+  }
+
+  let data = loadData();
+  if (!data.clip) data.clip = []; if (!data.note) data.note = []; if (!data.summ) data.summ = [];
+
+  const input = document.getElementById('mainInput'), category = document.getElementById('category'), submitBtn = document.getElementById('submitBtn');
+  const toast = document.getElementById('toast'), rangeBtns = document.querySelectorAll('nav button[data-range]');
+  const logoBtn = document.getElementById('logoBtn'), backBtn = document.getElementById('backBtn');
+  const pageHome = document.getElementById('pageHome'), pageDetail = document.getElementById('pageDetail');
+  const sectionHeaders = document.querySelectorAll('.section-header');
+  const detailTitleText = document.getElementById('detailTitleText'), detailBadge = document.getElementById('detailBadge'), detailCount = document.getElementById('detailCount');
+  const detailGrid = document.getElementById('detailGrid'), filterBar = document.getElementById('filterBar');
+  const clipExtra = document.getElementById('clipExtra'), noteExtra = document.getElementById('noteExtra');
+  const clipSource = document.getElementById('clipSource'), clipType = document.getElementById('clipType'), clipAuthor = document.getElementById('clipAuthor'), clipTitle = document.getElementById('clipTitle');
+  const noteActivity = document.getElementById('noteActivity');
+
+  const aiModal = document.getElementById('aiModal'), aiCloseBtn = document.getElementById('aiCloseBtn'), aiChat = document.getElementById('aiChat');
+  const aiInput = document.getElementById('aiInput'), aiSendBtn = document.getElementById('aiSendBtn'), aiContextInfo = document.getElementById('aiContextInfo');
+  const aiCopyFallbackBtn = document.getElementById('aiCopyFallbackBtn');
+  const aiSettingsBtn = document.getElementById('aiSettingsBtn'), aiSettingsPanel = document.getElementById('aiSettingsPanel');
+  const apiKeyInput = document.getElementById('apiKeyInput'), apiUrlInput = document.getElementById('apiUrlInput'), apiModelInput = document.getElementById('apiModelInput');
+  const apiKeySaveBtn = document.getElementById('apiKeySaveBtn'), apiKeyClearBtn = document.getElementById('apiKeyClearBtn');
+
+  function getStartOfDay(date) { const d = new Date(date); d.setHours(0,0,0,0); return d.getTime(); }
+  function getCutoff(range) { const days = RANGE_CONFIG[range].days; return days === 1 ? getStartOfDay(Date.now()) : Date.now() - days * 24 * 60 * 60 * 1000; }
+  function filterItems(items, range) { return items.filter(item => item.time >= getCutoff(range)); }
+  function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+  function formatTime(ts) { return new Date(ts).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  function formatDate(ts) { return new Date(ts).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }); }
+
+  function toggleExtraFields() { clipExtra.classList.toggle('visible', category.value === 'clip'); noteExtra.classList.toggle('visible', category.value === 'note'); }
+  category.addEventListener('change', toggleExtraFields);
+  function clearClipExtra() { clipSource.value = ''; clipType.value = ''; clipAuthor.value = ''; clipTitle.value = ''; }
+  function clearNoteExtra() { noteActivity.value = ''; }
+
+  function clipTags(item) { if (!item.source && !item.type && !item.author && !item.title) return ''; let tags = ''; if (item.source) tags += `<span class="tag source">${escapeHtml(item.source)}</span>`; if (item.type) tags += `<span class="tag type">${escapeHtml(item.type)}</span>`; if (item.author) tags += `<span class="tag">${escapeHtml(item.author)}</span>`; if (item.title) tags += `<span class="tag">${escapeHtml(item.title)}</span>`; return `<div class="card-tags">${tags}</div>`; }
+  function noteTags(item) { return item.activity ? `<div class="card-tags"><span class="tag activity">${escapeHtml(item.activity)}</span></div>` : ''; }
+  function matrixClipTags(item) { if (!item.source && !item.type) return ''; let tags = ''; if (item.source) tags += `<span class="tag source">${escapeHtml(item.source)}</span>`; if (item.type) tags += `<span class="tag type">${escapeHtml(item.type)}</span>`; return `<div class="matrix-card-tags">${tags}</div>`; }
+  function matrixClipAuthorTitle(item) { if (!item.author && !item.title) return ''; let html = ''; if (item.author) html += `<div class="matrix-card-author">👤 ${escapeHtml(item.author)}</div>`; if (item.title) html += `<div class="matrix-card-author" style="color:#555">📖 ${escapeHtml(item.title)}</div>`; return html; }
+  function matrixNoteTags(item) { return item.activity ? `<div class="matrix-card-tags"><span class="tag activity">${escapeHtml(item.activity)}</span></div>` : ''; }
+
+  function showHome() { pageHome.classList.add('active'); pageDetail.classList.remove('active'); currentDetailCat = null; detailFilters = {}; closeAiModal(); window.scrollTo({ top: 0, behavior: 'smooth' }); renderHome(); }
+  function showDetail(cat) { currentDetailCat = cat; detailFilters = {}; pageHome.classList.remove('active'); pageDetail.classList.add('active'); window.scrollTo({ top: 0, behavior: 'instant' }); renderDetail(); }
+
+  function getUniqueValues(items, key) { return [...new Set(items.filter(i => i[key]).map(i => i[key]))].sort(); }
+  function buildFilterBar() {
+    filterBar.innerHTML = ''; if (!currentDetailCat) return;
+    const items = filterItems(data[currentDetailCat] || [], currentRange);
+    if (currentDetailCat === 'clip') { const sources = getUniqueValues(items, 'source'), types = getUniqueValues(items, 'type'), authors = getUniqueValues(items, 'author'), titles = getUniqueValues(items, 'title'); if (sources.length) addFilterSelect('来源', 'source', sources); if (types.length) addFilterSelect('类别', 'type', types); if (authors.length) addFilterSelect('Author', 'author', authors); if (titles.length) addFilterSelect('Title', 'title', titles); }
+    else if (currentDetailCat === 'note') { const activities = getUniqueValues(items, 'activity'); if (activities.length) addFilterSelect('活动', 'activity', activities); }
+    if (Object.keys(detailFilters).length > 0) { const clear = document.createElement('button'); clear.className = 'filter-clear'; clear.textContent = '清除筛选'; clear.onclick = () => { detailFilters = {}; renderDetail(); }; filterBar.appendChild(clear); }
+    const aiBtn = document.createElement('button'); aiBtn.className = 'ai-analyze-btn'; aiBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> AI 分析`; aiBtn.onclick = openAiModal; filterBar.appendChild(aiBtn);
+  }
+  function addFilterSelect(label, key, options) { const wrap = document.createElement('div'); wrap.style.cssText = 'display:flex;align-items:center;gap:6px;'; const lbl = document.createElement('span'); lbl.className = 'filter-label'; lbl.textContent = label; const sel = document.createElement('select'); sel.className = 'filter-select'; sel.innerHTML = `<option value="">全部</option>` + options.map(v => `<option value="${escapeHtml(v)}"${detailFilters[key] === v ? ' selected' : ''}>${escapeHtml(v)}</option>`).join(''); sel.onchange = () => { if (sel.value) detailFilters[key] = sel.value; else delete detailFilters[key]; renderDetailCards(); }; wrap.appendChild(lbl); wrap.appendChild(sel); filterBar.appendChild(wrap); }
+  function applyFilters(items) { return items.filter(item => { for (const [key, val] of Object.entries(detailFilters)) { if (item[key] !== val) return false; } return true; }); }
+
+  function renderHome() {
+    const config = RANGE_CONFIG[currentRange]; document.getElementById('homeRangeTitle').textContent = config.title; document.getElementById('homeRangeSubtitle').textContent = config.subtitle;
+    ['clip','note','summ'].forEach(cat => { const list = document.getElementById('home' + cat.charAt(0).toUpperCase() + cat.slice(1) + 'List'); const items = filterItems(data[cat] || [], currentRange); if (items.length === 0) { list.innerHTML = `<div class="empty-state">该时段暂无${CATEGORY_LABEL[cat]}</div>`; return; } list.innerHTML = items.slice().reverse().slice(0, 3).map(item => { const originalIdx = data[cat].indexOf(item); const extraTags = cat === 'clip' ? clipTags(item) : (cat === 'note' ? noteTags(item) : ''); return `<div class="card"><div class="card-text">${escapeHtml(item.text)}</div>${extraTags}<div class="card-meta"><span class="card-time">${formatTime(item.time)}</span><div class="card-actions"><button class="card-btn" onclick="copyText('${encodeURIComponent(item.text)}')">复制</button><button class="card-btn delete" onclick="deleteItem('${cat}',${originalIdx})">删除</button></div></div></div>`; }).join(''); if (items.length > 3) list.innerHTML += `<div class="empty-state" style="padding:12px 0;font-size:13px">还有 ${items.length - 3} 条，点击上方标题查看全部 →</div>`; });
+  }
+
+  function renderDetail() { const cat = currentDetailCat; detailTitleText.textContent = CATEGORY_LABEL[cat]; detailBadge.textContent = CATEGORY_BADGE[cat]; detailBadge.className = 'badge ' + BADGE_CLASS[cat]; buildFilterBar(); renderDetailCards(); }
+  function renderDetailCards() { const cat = currentDetailCat; const items = filterItems(data[cat] || [], currentRange); const filtered = applyFilters(items); currentFilteredItems = filtered; detailCount.textContent = `(${filtered.length})`; if (filtered.length === 0) { detailGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">该时段暂无${CATEGORY_LABEL[cat]}</div>`; return; } detailGrid.innerHTML = filtered.slice().reverse().map((item, idx) => { const originalIdx = data[cat].indexOf(item); let extraHTML = ''; if (cat === 'clip') extraHTML = matrixClipTags(item) + matrixClipAuthorTitle(item); else if (cat === 'note') extraHTML = matrixNoteTags(item); return `<div class="matrix-card" style="animation-delay:${Math.min(idx * 0.04, 0.5)}s"><div class="matrix-card-text">${escapeHtml(item.text)}</div>${extraHTML}<div class="matrix-card-meta"><span class="matrix-card-time">${formatDate(item.time)} · ${new Date(item.time).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</span><div class="matrix-card-actions"><button class="card-btn" onclick="copyText('${encodeURIComponent(item.text)}')">复制</button><button class="card-btn delete" onclick="deleteItem('${cat}',${originalIdx})">删除</button></div></div></div>`; }).join(''); }
+
+  // ===== AI Analysis =====
+  function openAiModal() {
+    aiModal.classList.add('active'); aiFallbackMode = false; aiMessages = [];
+    const cfg = getApiConfig();
+    const apiBadge = cfg && cfg.key ? `<span class="ai-settings-badge">● 已配置</span>` : '<span style="color:#555;font-size:11px;margin-left:8px">未配置</span>';
+    aiContextInfo.innerHTML = `基于 ${currentFilteredItems.length} 条${CATEGORY_LABEL[currentDetailCat]}（${RANGE_CONFIG[currentRange].title}）${apiBadge}`;
+    if (cfg && cfg.key) {
+      apiKeyInput.value = cfg.key; apiUrlInput.value = cfg.url; apiModelInput.value = cfg.model;
+    } else { apiKeyInput.value = ''; apiUrlInput.value = DEFAULT_API_URL; apiModelInput.value = DEFAULT_API_MODEL; }
+    aiSettingsPanel.classList.remove('active');
+    aiMessages.push({ role: 'ai', content: `你好！我已加载你当前筛选出的 **${currentFilteredItems.length}** 条${CATEGORY_LABEL[currentDetailCat]}。\n\n${cfg && cfg.key ? 'API 已配置，可以直接提问。' : '⚠️ 尚未配置 API Key。点击右上角 ⚙️ 输入你的 Kimi API Key 后，即可直接在这里提问。'}\n\n示例问题：\n• 这些内容有什么共同主题？\n• 帮我总结一下核心观点\n• 哪些内容最值得回顾？` });
+    renderAiChat(); aiInput.value = ''; aiInput.focus(); aiSendBtn.disabled = false;
+  }
+  function closeAiModal() { aiModal.classList.remove('active'); }
+  function toggleAiSettings() { aiSettingsPanel.classList.toggle('active'); }
+  function renderAiChat() { aiChat.innerHTML = aiMessages.map((msg) => { const isAi = msg.role === 'ai'; const avatar = isAi ? 'AI' : '我'; return `<div class="ai-msg ${isAi ? 'ai' : 'user'}"><div class="ai-avatar">${avatar}</div><div class="ai-bubble">${escapeHtml(msg.content)}</div></div>`; }).join(''); aiChat.scrollTop = aiChat.scrollHeight; }
+  function addAiLoading() { const div = document.createElement('div'); div.className = 'ai-msg ai'; div.id = 'aiLoading'; div.innerHTML = '<div class="ai-avatar">AI</div><div class="ai-bubble"><span class="ai-loading">思考中...</span></div>'; aiChat.appendChild(div); aiChat.scrollTop = aiChat.scrollHeight; }
+  function removeAiLoading() { const el = document.getElementById('aiLoading'); if (el) el.remove(); }
+
+  async function sendAiMessage() {
+    const question = aiInput.value.trim(); if (!question) return;
+    if (currentFilteredItems.length === 0) { showToast('当前没有可分析的记录'); return; }
+    const cfg = getApiConfig();
+    if (!cfg || !cfg.key) { aiMessages.push({ role: 'ai', content: '⚠️ 尚未配置 API Key。\n\n请点击右上角 ⚙️ 输入你的 Kimi API Key，然后重试。\n\n或者使用下方「复制 Prompt」按钮，粘贴到 Kimi/ChatGPT 中提问。' }); renderAiChat(); return; }
+    aiMessages.push({ role: 'user', content: question }); aiInput.value = ''; renderAiChat(); addAiLoading(); aiSendBtn.disabled = true;
+
+    try {
+      const context = buildAiContext(question);
+      const response = await fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key }, body: JSON.stringify({ model: cfg.model, messages: [{ role: 'system', content: `你是用户的个人知识管理助手。用户正在查看他的「${CATEGORY_LABEL[currentDetailCat]}」记录。请基于用户提供的记录内容，用中文回答用户的问题。回答要简洁、有洞察力，必要时可以引用具体记录。` }, { role: 'user', content: context }], temperature: 0.7, max_tokens: 2000 }) });
+      removeAiLoading();
+      if (!response.ok) { const text = await response.text(); throw new Error(`API 错误 ${response.status}: ${text}`); }
+      const result = await response.json(); const answer = result.choices?.[0]?.message?.content || '抱歉，没有获取到回答。'; aiMessages.push({ role: 'ai', content: answer });
+    } catch (err) {
+      removeAiLoading();
+      const isCors = err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('CORS');
+      if (isCors) {
+        aiMessages.push({ role: 'ai', content: '⚠️ 浏览器安全限制（CORS）阻止了直接调用 API。\n\n解决方案：\n1. 安装浏览器 CORS 解除插件（如「Allow CORS」）后重试\n2. 使用下方「复制 Prompt」按钮，粘贴到 Kimi/ChatGPT 提问\n3. 用命令行启动浏览器（macOS）：\n   open -a "Google Chrome" --args --disable-web-security --user-data-dir=/tmp/chrome_dev' });
+        aiFallbackMode = true;
+      } else {
+        aiMessages.push({ role: 'ai', content: '抱歉，分析出错了：' + err.message + '\n\n你可以检查 API Key 是否有效，或尝试刷新页面。' });
+      }
+    }
+    renderAiChat(); aiSendBtn.disabled = false;
+  }
+
+  function buildAiContext(question) {
+    const cat = currentDetailCat, rangeTitle = RANGE_CONFIG[currentRange].title;
+    let filterDesc = ''; const filterKeys = Object.keys(detailFilters); if (filterKeys.length > 0) filterDesc = '，筛选条件：' + filterKeys.map(k => `${k}=${detailFilters[k]}`).join('，');
+    const items = currentFilteredItems.slice().reverse().slice(0, 40);
+    const lines = items.map((item, i) => { let meta = []; if (item.source) meta.push(`来源:${item.source}`); if (item.type) meta.push(`类别:${item.type}`); if (item.author) meta.push(`作者:${item.author}`); if (item.title) meta.push(`书名:${item.title}`); if (item.activity) meta.push(`活动:${item.activity}`); const metaStr = meta.length ? `（${meta.join('，')}）` : ''; return `[${i+1}]${metaStr}\n${item.text}`; });
+    let header = `以下是我筛选出的${items.length}条「${CATEGORY_LABEL[cat]}」记录（时间范围：${rangeTitle}${filterDesc}）：\n\n`; if (currentFilteredItems.length > 40) header = `以下是我筛选出的${currentFilteredItems.length}条「${CATEGORY_LABEL[cat]}」记录中的前40条（时间范围：${rangeTitle}${filterDesc}）：\n\n`;
+    return header + lines.join('\n\n---\n\n') + '\n\n我的问题是：' + question + '\n\n请基于以上记录内容，用中文回答我的问题。回答要简洁、有洞察力，必要时可以引用具体记录。';
+  }
+
+  async function copyPromptFallback() {
+    if (currentFilteredItems.length === 0) { showToast('当前没有可分析的记录'); return; }
+    const question = aiInput.value.trim() || '请帮我分析以上内容';
+    const prompt = buildAiContext(question);
+    try { await navigator.clipboard.writeText(prompt); showToast('已复制完整 Prompt，快去 Kimi 粘贴吧！'); }
+    catch { showToast('复制失败，请手动复制'); }
+  }
+
+  function saveApiSettings() {
+    const key = apiKeyInput.value.trim();
+    const url = apiUrlInput.value.trim() || DEFAULT_API_URL;
+    const model = apiModelInput.value.trim() || DEFAULT_API_MODEL;
+    if (!key) { showToast('请输入 API Key'); return; }
+    saveApiConfig({ key, url, model });
+    showToast('API 配置已保存');
+    aiSettingsPanel.classList.remove('active');
+    const cfg = getApiConfig();
+    const apiBadge = cfg && cfg.key ? `<span class="ai-settings-badge">● 已配置</span>` : '<span style="color:#555;font-size:11px;margin-left:8px">未配置</span>';
+    aiContextInfo.innerHTML = `基于 ${currentFilteredItems.length} 条${CATEGORY_LABEL[currentDetailCat]}（${RANGE_CONFIG[currentRange].title}）${apiBadge}`;
+  }
+  function clearApiSettings() {
+    apiKeyInput.value = ''; apiUrlInput.value = DEFAULT_API_URL; apiModelInput.value = DEFAULT_API_MODEL;
+    clearApiConfig(); showToast('API 配置已清除');
+    const apiBadge = '<span style="color:#555;font-size:11px;margin-left:8px">未配置</span>';
+    aiContextInfo.innerHTML = `基于 ${currentFilteredItems.length} 条${CATEGORY_LABEL[currentDetailCat]}（${RANGE_CONFIG[currentRange].title}）${apiBadge}`;
+  }
+
+  aiCloseBtn.onclick = closeAiModal; aiModal.onclick = (e) => { if (e.target === aiModal) closeAiModal(); };
+  aiSettingsBtn.onclick = toggleAiSettings; aiSendBtn.onclick = sendAiMessage; aiCopyFallbackBtn.onclick = copyPromptFallback;
+  apiKeySaveBtn.onclick = saveApiSettings; apiKeyClearBtn.onclick = clearApiSettings;
+  aiInput.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); sendAiMessage(); } });
+
+  // ===== Add Item =====
+  function addItem() { const text = input.value.trim(); if (!text) return; const cat = category.value; const item = { text, time: Date.now() }; if (cat === 'clip') { const s = clipSource.value.trim(), t = clipType.value.trim(), a = clipAuthor.value.trim(), ti = clipTitle.value.trim(); if (s) item.source = s; if (t) item.type = t; if (a) item.author = a; if (ti) item.title = ti; clearClipExtra(); } else if (cat === 'note') { const act = noteActivity.value.trim(); if (act) item.activity = act; clearNoteExtra(); } data[cat].push(item); saveData(data); input.value = ''; if (currentDetailCat) renderDetail(); else renderHome(); showToast(`已保存到「${CATEGORY_LABEL[cat]}」`); }
+  function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); }
+
+  window.copyText = (encoded) => { navigator.clipboard.writeText(decodeURIComponent(encoded)).then(() => showToast('已复制到剪贴板')); };
+  window.deleteItem = (cat, idx) => { if (!confirm('确定删除这条' + CATEGORY_LABEL[cat] + '？')) return; data[cat].splice(idx, 1); saveData(data); if (currentDetailCat) renderDetail(); else renderHome(); showToast('已删除'); };
+
+  submitBtn.addEventListener('click', addItem); input.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); addItem(); } });
+  rangeBtns.forEach(btn => { btn.addEventListener('click', () => { const range = btn.dataset.range; if (range === currentRange) return; currentRange = range; rangeBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); if (currentDetailCat) renderDetail(); else renderHome(); }); });
+  sectionHeaders.forEach(h => h.addEventListener('click', () => showDetail(h.dataset.cat)));
+  logoBtn.addEventListener('click', showHome); backBtn.addEventListener('click', showHome);
+
+  toggleExtraFields(); renderHome(); input.focus();
+})();
+</script>
+
+</body>
+</html>
